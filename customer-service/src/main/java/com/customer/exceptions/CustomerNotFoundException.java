@@ -1,0 +1,12 @@
+package com.customer.exceptions;
+
+public class CustomerNotFoundException extends RuntimeException {
+
+	private static final String MESSAGE = "Customer [id=%id] not found";
+
+	public CustomerNotFoundException(Integer id) {
+		super(MESSAGE.formatted(id));
+	}
+	
+	
+}

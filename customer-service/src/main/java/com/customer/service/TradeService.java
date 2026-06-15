@@ -46,14 +46,36 @@ public class TradeService {
 		return customerMono.zipWhen(customer -> portFolioItemMono).flatMap(t -> this.executeBuy(t.getT1(), t.getT2(), request));
 	}
 	
-	private Mono<StockTradeResponse> sellStock(Integer customerId, StockTradeRequest request){
-		return null;
-	}
-	
 	private Mono<StockTradeResponse> executeBuy(Customer customer, PortfolioItem portfolioItem, StockTradeRequest request){
 		
 		customer.setBalance(customer.getBalance() - request.totalPrice());
 		portfolioItem.setQuantity(portfolioItem.getQuantity() + request.quantity());
+		return this.saveAndBuildRespons(customer, request, portfolioItem);
+	}
+	
+	private Mono<StockTradeResponse> sellStock(Integer customerId,StockTradeRequest request ){
+		Mono<Customer> customerMono = this.customerRepository.findById(customerId)
+															 .switchIfEmpty(ApplicationException.customerNotFound(customerId));
+		
+			Mono<PortfolioItem> portFolioItemMono = this.portfolioItemRepository
+														.findByCustomerIdAndTicker(customerId, request.ticker())
+														.filter(pi -> pi.getQuantity() >= request.quantity())
+														.defaultIfEmpty(EntityDtoMapper.toPortFolioItem(customerId, request.ticker()));
+		
+			return customerMono.zipWhen(customer -> portFolioItemMono)
+								.flatMap(t -> this.executeSell(t.getT1(), t.getT2(), request));
+	}
+	
+	
+	private Mono<StockTradeResponse> executeSell(Customer customer, PortfolioItem portfolioItem, StockTradeRequest request){
+		
+		customer.setBalance(customer.getBalance() + request.totalPrice());
+		portfolioItem.setQuantity(portfolioItem.getQuantity() - request.quantity());
+		return this.saveAndBuildRespons(customer, request, portfolioItem);
+
+	}
+	
+	private Mono<StockTradeResponse> saveAndBuildRespons(Customer customer, StockTradeRequest request, PortfolioItem portfolioItem) {
 		var response = EntityDtoMapper.toStockTradeResponse(request, customer.getId(), customer.getBalance());
 		return Mono.zip(this.customerRepository.save(customer), this.portfolioItemRepository.save(portfolioItem))
 		.thenReturn(response);

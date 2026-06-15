@@ -7,7 +7,4 @@ public class InsufficientShareException extends RuntimeException {
 	public InsufficientShareException(Integer customerId) {
 		super(MESSAGE.formatted(customerId));
 	}
-	
-	
-
 }

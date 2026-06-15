@@ -50,7 +50,7 @@ public class TradeService {
 		
 		customer.setBalance(customer.getBalance() - request.totalPrice());
 		portfolioItem.setQuantity(portfolioItem.getQuantity() + request.quantity());
-		return this.saveAndBuildRespons(customer, request, portfolioItem);
+		return 	this.saveAndBuildRespons(customer, request, portfolioItem);
 	}
 	
 	private Mono<StockTradeResponse> sellStock(Integer customerId,StockTradeRequest request ){

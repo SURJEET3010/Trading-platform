@@ -24,7 +24,7 @@ public class CustomerService {
 	}
 	
 	
-	private Mono<CustomerInformation> getCustomerInformation(Integer customerId) {
+	public Mono<CustomerInformation> getCustomerInformation(Integer customerId) {
 		return this.customerRepository.findById(customerId)
 				.switchIfEmpty(ApplicationException.customerNotFound(customerId))
 				.flatMap(this::buildCustomerInformation);
